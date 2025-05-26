@@ -5,20 +5,24 @@ import cors from 'cors';
 import https from 'https';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
+// Contadores
 let totalConsultas = 0;
 let consultasActivas = 0;
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
+// Para ignorar errores de certificado (solo si es necesario)
 const agent = new https.Agent({ rejectUnauthorized: false });
 
+// Ruta principal
 app.post('/api/dni', async (req, res) => {
   const { dni } = req.body;
 
-  if (!dni || !/^[0-9]{8}$/.test(dni)) {
+  if (!dni || !/^\d{8}$/.test(dni)) {
     console.log('❌ DNI inválido recibido.');
     return res.status(400).json({ error: 'DNI inválido' });
   }
@@ -73,6 +77,7 @@ app.post('/api/dni', async (req, res) => {
       dona_organos: p.dona_organos || 'NO',
       foto_base64: p.foto_base64
     });
+
   } catch (error) {
     consultasActivas--;
     console.error('❌ Error al consultar API:', error.message);
@@ -80,9 +85,8 @@ app.post('/api/dni', async (req, res) => {
   }
 });
 
-// ✅ CAMBIO CLAVE AQUÍ
+// Escuchar en 0.0.0.0 para Render
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor iniciado en http://0.0.0.0:${PORT}`);
   console.log('🌐 Navegando listo para recibir consultas.');
 });
-
